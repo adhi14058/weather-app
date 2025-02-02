@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/weather-app/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/weather-app/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/weather-app",
+  "projects": {
+    "scheduler": {
+      "type": "application",
+      "root": "apps/scheduler",
+      "entryFile": "main",
+      "sourceRoot": "apps/scheduler/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/scheduler/tsconfig.app.json"
+      }
+    },
+    "weather-app": {
+      "type": "application",
+      "root": "apps/weather-app",
+      "entryFile": "main",
+      "sourceRoot": "apps/weather-app/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/weather-app/tsconfig.app.json"
+      }
+    }
+  }
+}
