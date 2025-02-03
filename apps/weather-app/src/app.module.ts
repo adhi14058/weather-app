@@ -12,12 +12,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RequestContextMiddleware } from './core/middlewares/requestContext.middleware';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { LoggingInterceptor } from './core/interceptors/logging.interceptor';
+import { WeatherApiProvider } from './core/providers/weatherApi';
+import { GlobalModule } from './modules/global/global.module';
+import { UserModule } from './modules/user/user.module';
+import { LocationModule } from './modules/location/location.module';
+import { UserLocationModule } from './modules/user-location/user-location.module';
+
 @Module({
   imports: [
-    // Load .env and make ConfigService available globally
-    ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -48,15 +50,13 @@ import { LoggingInterceptor } from './core/interceptors/logging.interceptor';
       }),
       inject: [ConfigService],
     }),
+    GlobalModule,
+    UserModule,
+    LocationModule,
+    UserLocationModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
-    },
-  ],
+  providers: [AppService, WeatherApiProvider],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
