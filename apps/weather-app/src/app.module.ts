@@ -22,16 +22,18 @@ import {
   _1_MINUTES_IN_MS,
   _30_MINUTES_IN_MS,
 } from './core/constants/time.constant';
+import { QueueProcessorModule } from './modules/queue-processor/queue-processor.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         store: redisStore,
         host: configService.get<string>('REDIS_HOST') || 'localhost',
         port: parseInt(configService.get<string>('REDIS_PORT')!, 10),
-        ttl: _30_MINUTES_IN_MS, // 30 minutes
+        ttl: _30_MINUTES_IN_MS,
       }),
       inject: [ConfigService],
       isGlobal: true,
@@ -61,6 +63,7 @@ import {
     LocationModule,
     UserLocationModule,
     WeatherModule,
+    QueueProcessorModule,
   ],
   controllers: [AppController],
   providers: [AppService, WeatherApiProvider],

@@ -1,16 +1,12 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
-import { SchedulerService } from './scheduler.service';
-import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LocationModule } from '../location/location.module';
+import { weatherCacheProcessor } from './weatherCache.processor';
 
 @Module({
   imports: [
-    // Load .env and make ConfigService available globally
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-    ScheduleModule.forRoot(),
+    LocationModule,
     BullModule.registerQueueAsync({
       name: 'scheduler-queue',
       imports: [ConfigModule],
@@ -24,6 +20,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
   ],
   controllers: [],
-  providers: [SchedulerService],
+  providers: [weatherCacheProcessor],
 })
-export class SchedulerModule {}
+export class QueueProcessorModule {}

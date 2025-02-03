@@ -19,6 +19,10 @@ export class LocationService {
     private weatherApiProvider: WeatherApiProvider,
   ) {}
 
+  getLocations() {
+    return this.locationRepository.find();
+  }
+
   async findAllLocationsByUserId(userId: number) {
     const userLocations = await this.userLocationService.findByUserId(userId);
     const locations = userLocations.map((userLocation) => {

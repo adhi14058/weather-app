@@ -8,7 +8,7 @@ export class SchedulerService {
   private readonly logger = new Logger(SchedulerService.name);
 
   constructor(
-    @InjectQueue('Scheduler-Queue') private readonly myQueue: Queue,
+    @InjectQueue('scheduler-queue') private readonly myQueue: Queue,
   ) {}
 
   // This method will be executed at minute 1 and 31 of every hour

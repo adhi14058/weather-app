@@ -9,5 +9,6 @@ import { UserLocationModule } from '../user-location/user-location.module';
   imports: [TypeOrmModule.forFeature([Location]), UserLocationModule],
   controllers: [LocationController],
   providers: [LocationService],
+  exports: [LocationService],
 })
 export class LocationModule {}
