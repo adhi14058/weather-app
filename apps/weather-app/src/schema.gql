@@ -1,0 +1,71 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type WeatherResponseDto {
+  temp_c: Float!
+  temp_f: Float!
+  wind_mph: Float!
+  wind_kph: Float!
+  wind_degree: Float!
+  wind_dir: String!
+  pressure_mb: Float!
+  pressure_in: Float!
+  humidity: Float!
+  feelslike_c: Float!
+  feelslike_f: Float!
+  windchill_c: Float!
+  windchill_f: Float!
+}
+
+type AstroDto {
+  sunrise: String!
+  sunset: String!
+  moonrise: String!
+  moonset: String!
+  moon_phase: String!
+  moon_illumination: String!
+}
+
+type HourDto {
+  time: String!
+  temp_c: Float!
+  temp_f: Float!
+  wind_mph: Float!
+  wind_kph: Float!
+  wind_degree: Float!
+  wind_dir: String!
+  pressure_mb: Float!
+  pressure_in: Float!
+  precip_mm: Float!
+  precip_in: Float!
+  humidity: Float!
+  cloud: Float!
+  feelslike_c: Float!
+  feelslike_f: Float!
+  windchill_c: Float!
+  windchill_f: Float!
+}
+
+type ForecastDayResponseDto {
+  date: String!
+  astro: AstroDto!
+  hour: [HourDto!]!
+}
+
+type ForecastResponseDto {
+  forecastday: [ForecastDayResponseDto!]!
+}
+
+type LocationResponseDto {
+  id: Int!
+  city: String!
+  region: String!
+  country: String!
+  forecast: ForecastResponseDto
+  weather: WeatherResponseDto
+}
+
+type Query {
+  location: [LocationResponseDto!]
+}

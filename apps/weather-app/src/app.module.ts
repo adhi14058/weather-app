@@ -22,6 +22,10 @@ import {
 } from './core/constants/time.constant';
 import { QueueProcessorModule } from './modules/queue-processor/queue-processor.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
+import { LocationResolver } from './modules/location/location.resolver';
 
 @Module({
   imports: [
@@ -57,6 +61,16 @@ import { AuthModule } from './modules/auth/auth.module';
       }),
       inject: [ConfigService],
     }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'apps/weather-app/src/schema.gql'),
+      playground: true,
+      path: '/graphql',
+      context: ({ req, res }) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        return { request: req, response: res };
+      },
+    }),
     GlobalModule,
     UserModule,
     LocationModule,
@@ -66,7 +80,7 @@ import { AuthModule } from './modules/auth/auth.module';
     AuthModule,
   ],
   controllers: [],
-  providers: [WeatherApiProvider],
+  providers: [WeatherApiProvider, LocationResolver],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

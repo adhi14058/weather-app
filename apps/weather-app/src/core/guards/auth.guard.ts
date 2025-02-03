@@ -5,16 +5,17 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { IAuthUser, TokenPayload } from '../../modules/auth/types/auth.types';
+import { getRequestResponseFromContext } from '../utils';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req: Request = context.switchToHttp().getRequest();
+    const { req } = getRequestResponseFromContext(context);
+
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
       throw new UnauthorizedException('No authorization header provided');

@@ -1,11 +1,14 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Post,
+  SerializeOptions,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthPayloadDto } from './dto/login-auth.dto';
 import { AuthService } from './auth.service';
@@ -14,10 +17,15 @@ import { AuthUser } from '../../core/decorators/user.decorator';
 import { IAuthUser } from './types/auth.types';
 import { RegisterPayloadDto } from './dto/register-auth.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { plainToInstance } from 'class-transformer';
 import { AuthResponseDto } from './dto/response-auth.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('auth')
+@UseInterceptors(ClassSerializerInterceptor)
+@SerializeOptions({
+  strategy: 'excludeAll',
+  excludeExtraneousValues: true,
+})
 export class AuthController {
   constructor(private authService: AuthService) {}
 

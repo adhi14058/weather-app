@@ -3,12 +3,14 @@ import { Global, Module } from '@nestjs/common';
 import { WeatherApiProvider } from '../../core/providers/weatherApi';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { WeatherModule } from '../weather/weather.module';
 
 @Global()
 @Module({
   providers: [WeatherApiProvider],
   imports: [
     HttpModule,
+    WeatherModule,
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],
@@ -20,6 +22,6 @@ import { JwtModule } from '@nestjs/jwt';
       inject: [ConfigService],
     }),
   ],
-  exports: [HttpModule, WeatherApiProvider, JwtModule],
+  exports: [HttpModule, WeatherApiProvider, JwtModule, WeatherModule],
 })
 export class GlobalModule {}

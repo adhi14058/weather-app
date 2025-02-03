@@ -1,16 +1,21 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common'; //prettier-ignore
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, ParseIntPipe, HttpCode, HttpStatus, UseInterceptors, ClassSerializerInterceptor, SerializeOptions } from '@nestjs/common'; //prettier-ignore
 import { LocationService } from './location.service';
 import { AuthGuard } from '../../core/guards/auth.guard';
 import { AuthUser } from '../../core/decorators/user.decorator';
 import { CustomLogger } from '../../core/utils/CustomLogger';
 import { CreateLocationDto } from './dto/create-location.dto';
 import { LocationResponseDto } from './dto/response-location.dto';
-import { plainToInstance } from 'class-transformer';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { IAuthUser } from '../auth/types/auth.types';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('locations')
 @ApiBearerAuth()
+@UseInterceptors(ClassSerializerInterceptor)
+@SerializeOptions({
+  strategy: 'excludeAll',
+  excludeExtraneousValues: true,
+})
 @UseGuards(AuthGuard)
 export class LocationController {
   private readonly logger = new CustomLogger(LocationController.name);

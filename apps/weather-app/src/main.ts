@@ -15,7 +15,7 @@ async function bootstrap() {
   app.use(httpContext.middleware);
 
   app.set('trust proxy', 'loopback'); // Trust requests from the loopback address
-  app.use(helmet());
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.enableCors();
 
   setupGlobals(app);

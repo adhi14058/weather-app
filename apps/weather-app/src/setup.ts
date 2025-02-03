@@ -1,7 +1,6 @@
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
-import { Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { LoggingInterceptor } from './core/interceptors/logging.interceptor';
 import { CustomExceptionFilter } from './core/exceptionFilters/CustomException.filter';
@@ -28,12 +27,6 @@ export function setupGlobals(app: NestExpressApplication) {
   });
 
   app.useGlobalInterceptors(new LoggingInterceptor());
-  app.useGlobalInterceptors(
-    new ClassSerializerInterceptor(app.get(Reflector), {
-      strategy: 'excludeAll',
-      excludeExtraneousValues: true,
-    }),
-  );
 
   app.useGlobalFilters(new CustomExceptionFilter());
 
