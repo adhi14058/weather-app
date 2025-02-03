@@ -4,6 +4,7 @@ import { lastValueFrom } from 'rxjs';
 import {
   CurrentWeatherResponse,
   ForecastResponse,
+  LocationResponse,
 } from '../../types/weatherapi.types';
 import { ConfigService } from '@nestjs/config';
 import { CustomLogger } from '../utils/CustomLogger';
@@ -52,13 +53,12 @@ export class WeatherApiProvider {
     }
   }
 
-  async isValidLocation(city: string): Promise<boolean> {
+  async fetchLocationDetails(city: string): Promise<LocationResponse> {
     const url = `${this.baseUrl}/search.json?key=${this.apiKey}&q=${encodeURIComponent(city)}`;
     try {
-      const response$ =
-        this.httpService.get<ForecastResponse['location'][]>(url);
+      const response$ = this.httpService.get<LocationResponse[]>(url);
       const response = await lastValueFrom(response$);
-      return response.data.length > 0;
+      return response.data[0] ?? null;
     } catch (error) {
       this.logger.error(`${error}`);
       throw new HttpException('Invalid Location', HttpStatus.BAD_REQUEST);

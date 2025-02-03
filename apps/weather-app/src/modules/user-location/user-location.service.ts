@@ -42,7 +42,9 @@ export class UserLocationService {
 
   async removeUserLocation(userId: number, locationId: number) {
     const entity = await this.findByUserIdAndLocationId(userId, locationId);
-    if (!entity) throw new NotFoundException('Location not found');
+    if (!entity) {
+      throw new NotFoundException('Location not marked as favourite');
+    }
     return this.userLocationRepository.remove(entity);
   }
 }

@@ -2,13 +2,15 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { Location } from './entities/location.entity';
 import { UserLocationService } from '../user-location/user-location.service';
 import { WeatherApiProvider } from '../../core/providers/weatherApi';
 import { CustomLogger } from '../../core/utils/CustomLogger';
+import { _1_DAY_IN_MS } from '../../core/constants/time.constant';
 @Injectable()
 export class LocationService {
   private readonly logger = new CustomLogger(LocationService.name);
@@ -19,11 +21,17 @@ export class LocationService {
     private weatherApiProvider: WeatherApiProvider,
   ) {}
 
-  getLocations() {
-    return this.locationRepository.find();
+  getAllLocationsAccessedInLastNDay(days = 1) {
+    return this.locationRepository.find({
+      where: {
+        lastAccessedOn: MoreThan(
+          new Date(new Date().getTime() - _1_DAY_IN_MS * days),
+        ),
+      },
+    });
   }
 
-  async findAllLocationsByUserId(userId: number) {
+  async getAllLocationsByUserId(userId: number) {
     const userLocations = await this.userLocationService.findByUserId(userId);
     const locations = userLocations.map((userLocation) => {
       return userLocation.location;
@@ -31,37 +39,46 @@ export class LocationService {
     return locations;
   }
 
-  async addUserLocation(userId: number, city: string) {
+  async addUserLocation(userId: number, city: string): Promise<Location> {
     const location = await this.locationRepository.findOne({ where: { city } });
     if (location) {
-      const fetchedLocation = await this.weatherApiProvider.isValidLocation(city); //prettier-ignore
-      if (!fetchedLocation) throw new BadRequestException('Invalid Location');
-
       const userLocation =
-        await this.userLocationService.findByUserIdAndLocationId(
-          userId,
-          location.id,
-        );
+        await this.userLocationService.findByUserIdAndLocationId(userId, location.id); //prettier-ignore
       if (userLocation) {
         throw new ConflictException('Location already exists');
       }
 
       await this.userLocationService.addUserLocation(userId, location.id);
-      return;
+      return location;
     }
-    const newLocation = this.locationRepository.create({ city });
+    const locationData = await this.weatherApiProvider.fetchLocationDetails(city); //prettier-ignore
+    if (!locationData) throw new BadRequestException('Invalid Location');
+    const newLocation = this.locationRepository.create({
+      city,
+      region: locationData.region,
+      country: locationData.country,
+    });
     await this.locationRepository.save(newLocation);
     await this.userLocationService.addUserLocation(userId, newLocation.id);
+    return newLocation;
   }
 
   async removeLocation(userId: number, id: number) {
-    const location = await this.locationRepository.findOneOrFail({
-      where: { id },
-    });
+    const location = await this.locationRepository.findOne({ where: { id } });
+    if (!location) {
+      throw new NotFoundException('Location not found');
+    }
     await this.userLocationService.removeUserLocation(userId, location.id);
     const result = await this.userLocationService.findByLocationId(location.id);
     if (result.length === 0) {
       await this.locationRepository.remove(location);
     }
+  }
+
+  updateLocationAccessedOn(city: string) {
+    return this.locationRepository.update(
+      { city },
+      { lastAccessedOn: new Date() },
+    );
   }
 }

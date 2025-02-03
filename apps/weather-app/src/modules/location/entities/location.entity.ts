@@ -16,6 +16,15 @@ export class Location {
   @Index()
   city: string;
 
+  @Column()
+  region: string;
+
+  @Column()
+  country: string;
+
+  @Column({ default: new Date() })
+  lastAccessedOn: Date;
+
   @OneToMany(() => UserLocation, (userLocation) => userLocation.location)
   userLocations: UserLocation[];
 }

@@ -8,12 +8,16 @@ import * as jwt from 'jsonwebtoken';
 
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { UserService } from '../../modules/user/user.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: Request = context.switchToHttp().getRequest();
     const res: Response = context.switchToHttp().getResponse();
 
@@ -31,7 +35,12 @@ export class AuthGuard implements CanActivate {
     try {
       const jwtSecret = this.configService.get<string>('JWT_SECRET')!;
       const decoded = jwt.verify(token, jwtSecret) as jwt.JwtPayload;
-      res.locals.user = decoded;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const user = await this.userService.getUserByEmail(decoded.email ?? '');
+      if (!user) {
+        throw new UnauthorizedException('Invalid token');
+      }
+      res.locals.user = user;
       return true;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {

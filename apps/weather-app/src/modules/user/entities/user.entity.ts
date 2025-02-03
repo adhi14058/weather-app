@@ -6,8 +6,17 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ unique: true })
+  email: string;
+
   @Column()
-  name: string;
+  firstName: string;
+
+  @Column({ nullable: true })
+  lastName: string;
+
+  @Column()
+  password: string;
 
   @OneToMany(() => UserLocation, (userLocation) => userLocation.user)
   locations: UserLocation[];

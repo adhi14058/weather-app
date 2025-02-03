@@ -10,8 +10,17 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  async insert(name: string) {
-    const user = this.userRepository.create({ name });
+  async getUserByEmail(email: string) {
+    return this.userRepository.findOne({ where: { email } });
+  }
+
+  async insert() {
+    const user = this.userRepository.create({
+      email: 'adhi@gmail.com',
+      firstName: 'adhi',
+      lastName: 'baskaran',
+      password: '123456',
+    });
     return this.userRepository.save(user);
   }
 }

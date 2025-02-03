@@ -10,8 +10,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RequestContextMiddleware } from './core/middlewares/requestContext.middleware';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { WeatherApiProvider } from './core/providers/weatherApi';
 import { GlobalModule } from './modules/global/global.module';
 import { UserModule } from './modules/user/user.module';
@@ -65,8 +63,8 @@ import { QueueProcessorModule } from './modules/queue-processor/queue-processor.
     WeatherModule,
     QueueProcessorModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, WeatherApiProvider],
+  controllers: [],
+  providers: [WeatherApiProvider],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

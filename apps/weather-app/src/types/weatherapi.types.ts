@@ -1,4 +1,4 @@
-export interface Location {
+export interface LocationResponse {
   name: string;
   region: string;
   country: string;
@@ -122,7 +122,7 @@ export interface Forecast {
 }
 
 export interface ForecastResponse {
-  location: Location;
+  location: LocationResponse;
   current: Current;
   forecast: Forecast;
 }

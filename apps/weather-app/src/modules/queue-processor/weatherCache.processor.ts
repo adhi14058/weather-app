@@ -18,8 +18,9 @@ export class weatherCacheProcessor {
   ) {}
 
   @Process('refresh-weather-cache')
-  async process() {
-    const locations = await this.locationService.getLocations();
+  async cacheUserFavoueriteLocations() {
+    const locations =
+      await this.locationService.getAllLocationsAccessedInLastNDay();
     const promises: Promise<void>[] = [];
     for (const location of locations) {
       promises.push(

@@ -42,3 +42,13 @@ services:
       - 5432:5432
     env_file:
       - .env
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - '8888:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: adhi@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: adhipassword
