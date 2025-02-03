@@ -16,6 +16,6 @@ export class AppController {
   @UseGuards(AuthGuard)
   getHello() {
     // return this.userService.insert('Adhi');
-    return this.weatherApi.fetch5DayForecast('mumbai');
+    return this.weatherApi.fetchFiveDayForecast('mumbai');
   }
 }

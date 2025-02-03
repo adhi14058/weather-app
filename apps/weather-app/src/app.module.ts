@@ -17,6 +17,11 @@ import { GlobalModule } from './modules/global/global.module';
 import { UserModule } from './modules/user/user.module';
 import { LocationModule } from './modules/location/location.module';
 import { UserLocationModule } from './modules/user-location/user-location.module';
+import { WeatherModule } from './modules/weather/weather.module';
+import {
+  _1_MINUTES_IN_MS,
+  _30_MINUTES_IN_MS,
+} from './core/constants/time.constant';
 
 @Module({
   imports: [
@@ -26,13 +31,14 @@ import { UserLocationModule } from './modules/user-location/user-location.module
         store: redisStore,
         host: configService.get<string>('REDIS_HOST') || 'localhost',
         port: parseInt(configService.get<string>('REDIS_PORT')!, 10),
-        ttl: 30 * 60 * 1000, // 30 minutes
+        ttl: _30_MINUTES_IN_MS, // 30 minutes
       }),
       inject: [ConfigService],
+      isGlobal: true,
     }),
     ThrottlerModule.forRoot([
       {
-        ttl: 60 * 1000,
+        ttl: _1_MINUTES_IN_MS,
         limit: 1000,
       },
     ]),
@@ -54,6 +60,7 @@ import { UserLocationModule } from './modules/user-location/user-location.module
     UserModule,
     LocationModule,
     UserLocationModule,
+    WeatherModule,
   ],
   controllers: [AppController],
   providers: [AppService, WeatherApiProvider],

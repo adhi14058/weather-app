@@ -1,14 +1,22 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Location } from './entities/location.entity';
 import { UserLocationService } from '../user-location/user-location.service';
+import { WeatherApiProvider } from '../../core/providers/weatherApi';
+import { CustomLogger } from '../../core/utils/CustomLogger';
 @Injectable()
 export class LocationService {
+  private readonly logger = new CustomLogger(LocationService.name);
   constructor(
     @InjectRepository(Location)
     private locationRepository: Repository<Location>,
     private userLocationService: UserLocationService,
+    private weatherApiProvider: WeatherApiProvider,
   ) {}
 
   async findAllLocationsByUserId(userId: number) {
@@ -22,12 +30,17 @@ export class LocationService {
   async addUserLocation(userId: number, city: string) {
     const location = await this.locationRepository.findOne({ where: { city } });
     if (location) {
+      const fetchedLocation = await this.weatherApiProvider.isValidLocation(city); //prettier-ignore
+      if (!fetchedLocation) throw new BadRequestException('Invalid Location');
+
       const userLocation =
         await this.userLocationService.findByUserIdAndLocationId(
           userId,
           location.id,
         );
-      if (userLocation) throw new ConflictException('Location already exists');
+      if (userLocation) {
+        throw new ConflictException('Location already exists');
+      }
 
       await this.userLocationService.addUserLocation(userId, location.id);
       return;

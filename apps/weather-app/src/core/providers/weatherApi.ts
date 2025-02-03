@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Global } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import {
@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { CustomLogger } from '../utils/CustomLogger';
 
+@Global()
 @Injectable()
 export class WeatherApiProvider {
   private apiKey: string;
@@ -36,7 +37,7 @@ export class WeatherApiProvider {
     }
   }
 
-  async fetch5DayForecast(city: string): Promise<ForecastResponse> {
+  async fetchFiveDayForecast(city: string): Promise<ForecastResponse> {
     const url = `${this.baseUrl}/forecast.json?key=${this.apiKey}&q=${encodeURIComponent(city)}&days=5`;
     try {
       const response$ = this.httpService.get<ForecastResponse>(url);
@@ -48,6 +49,19 @@ export class WeatherApiProvider {
         'Failed to retrieve forecast',
         HttpStatus.BAD_REQUEST,
       );
+    }
+  }
+
+  async isValidLocation(city: string): Promise<boolean> {
+    const url = `${this.baseUrl}/search.json?key=${this.apiKey}&q=${encodeURIComponent(city)}`;
+    try {
+      const response$ =
+        this.httpService.get<ForecastResponse['location'][]>(url);
+      const response = await lastValueFrom(response$);
+      return response.data.length > 0;
+    } catch (error) {
+      this.logger.error(`${error}`);
+      throw new HttpException('Invalid Location', HttpStatus.BAD_REQUEST);
     }
   }
 }
