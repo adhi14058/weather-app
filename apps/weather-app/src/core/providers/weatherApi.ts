@@ -5,7 +5,7 @@ import {
   CurrentWeatherResponse,
   ForecastResponse,
   LocationResponse,
-} from '../../types/weatherapi.types';
+} from '../../modules/weather/types/weatherapi.types';
 import { ConfigService } from '@nestjs/config';
 import { CustomLogger } from '../utils/CustomLogger';
 

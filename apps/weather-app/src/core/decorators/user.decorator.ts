@@ -1,9 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { Response } from 'express';
+import { Request } from 'express';
 
 export const AuthUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
-    const request: Response = ctx.switchToHttp().getResponse();
-    return request.locals.user; // eslint-disable-line
+    const request: Request = ctx.switchToHttp().getRequest();
+    return request.user;
   },
 );

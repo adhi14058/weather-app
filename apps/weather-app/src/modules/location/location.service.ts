@@ -9,11 +9,9 @@ import { MoreThan, Repository } from 'typeorm';
 import { Location } from './entities/location.entity';
 import { UserLocationService } from '../user-location/user-location.service';
 import { WeatherApiProvider } from '../../core/providers/weatherApi';
-import { CustomLogger } from '../../core/utils/CustomLogger';
 import { _1_DAY_IN_MS } from '../../core/constants/time.constant';
 @Injectable()
 export class LocationService {
-  private readonly logger = new CustomLogger(LocationService.name);
   constructor(
     @InjectRepository(Location)
     private locationRepository: Repository<Location>,

@@ -21,6 +21,7 @@ import {
   _30_MINUTES_IN_MS,
 } from './core/constants/time.constant';
 import { QueueProcessorModule } from './modules/queue-processor/queue-processor.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { QueueProcessorModule } from './modules/queue-processor/queue-processor.
     UserLocationModule,
     WeatherModule,
     QueueProcessorModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [WeatherApiProvider],

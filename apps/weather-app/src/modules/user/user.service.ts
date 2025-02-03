@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { RegisterPayloadDto } from '../auth/dto/register-auth.dto';
 
 @Injectable()
 export class UserService {
@@ -10,17 +11,17 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  async getUserByEmail(email: string) {
-    return this.userRepository.findOne({ where: { email } });
+  async getUserByUserName(username: string) {
+    return this.userRepository.findOne({ where: { username } });
   }
 
-  async insert() {
-    const user = this.userRepository.create({
-      email: 'adhi@gmail.com',
-      firstName: 'adhi',
-      lastName: 'baskaran',
-      password: '123456',
+  async insertUser(registerDto: RegisterPayloadDto) {
+    const userEntity = this.userRepository.create({
+      username: registerDto.username,
+      firstName: registerDto.firstName,
+      lastName: registerDto.lastName,
+      password: registerDto.password,
     });
-    return this.userRepository.save(user);
+    return this.userRepository.save(userEntity);
   }
 }
