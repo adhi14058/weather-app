@@ -15,6 +15,7 @@ import { plainToInstance } from 'class-transformer';
 @SerializeOptions({
   strategy: 'excludeAll',
   excludeExtraneousValues: true,
+  type: LocationResponseDto,
 })
 @UseGuards(AuthGuard)
 export class LocationController {
@@ -35,7 +36,7 @@ export class LocationController {
     @Body() locationDto: CreateLocationDto,
   ) {
     this.logger.log(`Adding favourite location for user ${userId}`);
-    const location = await this.locationService.addUserLocation(userId, locationDto.city); //prettier-ignore
+    const location = await this.locationService.addUserLocation(userId, locationDto.city.toLowerCase()); //prettier-ignore
     return plainToInstance(LocationResponseDto, location);
   }
 

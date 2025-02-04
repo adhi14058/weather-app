@@ -38,39 +38,62 @@ export class LocationService {
   }
 
   async addUserLocation(userId: number, city: string): Promise<Location> {
-    const location = await this.locationRepository.findOne({ where: { city } });
-    if (location) {
-      const userLocation =
-        await this.userLocationService.findByUserIdAndLocationId(userId, location.id); //prettier-ignore
-      if (userLocation) {
-        throw new ConflictException('Location already exists');
-      }
+    return await this.locationRepository.manager.transaction(
+      async (manager) => {
+        // Use the transactional repository for Location operations.
+        const locationRepo = manager.getRepository(Location);
 
-      await this.userLocationService.addUserLocation(userId, location.id);
-      return location;
-    }
-    const locationData = await this.weatherApiProvider.fetchLocationDetails(city); //prettier-ignore
-    if (!locationData) throw new BadRequestException('Invalid Location');
-    const newLocation = this.locationRepository.create({
-      city,
-      region: locationData.region,
-      country: locationData.country,
-    });
-    await this.locationRepository.save(newLocation);
-    await this.userLocationService.addUserLocation(userId, newLocation.id);
-    return newLocation;
+        // Check if the location already exists.
+        const location = await locationRepo.findOne({ where: { city } });
+        if (location) {
+          const userLocation =
+            await this.userLocationService.findByUserIdAndLocationId(userId, location.id); //prettier-ignore
+          if (userLocation) {
+            throw new ConflictException('Location already exists');
+          }
+          // Pass the transaction's manager so that this call runs in the same transaction.
+          await this.userLocationService.addUserLocation(userId, location.id, manager); //prettier-ignore
+          return location;
+        }
+
+        // If the location does not exist, fetch details from the weather API.
+        const locationData = await this.weatherApiProvider.fetchLocationDetails(city); //prettier-ignore
+        if (!locationData) {
+          throw new BadRequestException('Invalid Location');
+        }
+        // Create and save the new location using the transactional repository.
+        const newLocation = locationRepo.create({
+          city,
+          region: locationData.region,
+          country: locationData.country,
+        });
+        await locationRepo.save(newLocation);
+        // Again, pass the manager for transactional consistency.
+        await this.userLocationService.addUserLocation(
+          userId,
+          newLocation.id,
+          manager,
+        );
+        return newLocation;
+      },
+    );
   }
 
   async removeLocation(userId: number, id: number) {
-    const location = await this.locationRepository.findOne({ where: { id } });
-    if (!location) {
-      throw new NotFoundException('Location not found');
-    }
-    await this.userLocationService.removeUserLocation(userId, location.id);
-    const result = await this.userLocationService.findByLocationId(location.id);
-    if (result.length === 0) {
-      await this.locationRepository.remove(location);
-    }
+    return await this.locationRepository.manager.transaction(
+      async (manager) => {
+        const locationRepo = manager.getRepository(Location);
+        const location = await locationRepo.findOne({ where: { id } });
+        if (!location) {
+          throw new NotFoundException('Location not found');
+        }
+        await this.userLocationService.removeUserLocation(userId, location.id, manager); //prettier-ignore
+        const result = await this.userLocationService.findByLocationId(location.id, manager); //prettier-ignore
+        if (result.length === 0) {
+          await locationRepo.remove(location);
+        }
+      },
+    );
   }
 
   updateLocationAccessedOn(city: string) {

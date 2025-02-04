@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { UserLocation } from './entities/user-location.entity';
 
 @Injectable()
@@ -10,41 +10,72 @@ export class UserLocationService {
     private userLocationRepository: Repository<UserLocation>,
   ) {}
 
-  async findByUserId(userId: number) {
-    return this.userLocationRepository.find({
+  async findByUserId(userId: number, manager?: EntityManager) {
+    const repo: Repository<UserLocation> = manager
+      ? manager.getRepository(UserLocation)
+      : this.userLocationRepository;
+
+    return repo.find({
       where: { userId },
       relations: ['location'],
     });
   }
 
-  async findByLocationId(locationId: number) {
-    return this.userLocationRepository.find({
+  async findByLocationId(locationId: number, manager?: EntityManager) {
+    const repo: Repository<UserLocation> = manager
+      ? manager.getRepository(UserLocation)
+      : this.userLocationRepository;
+    return repo.find({
       where: { locationId },
       relations: ['user'],
     });
   }
 
-  async findByUserIdAndLocationId(userId: number, locationId: number) {
-    return this.userLocationRepository.findOne({
+  async findByUserIdAndLocationId(
+    userId: number,
+    locationId: number,
+    manager?: EntityManager,
+  ) {
+    const repo: Repository<UserLocation> = manager
+      ? manager.getRepository(UserLocation)
+      : this.userLocationRepository;
+
+    return repo.findOne({
       where: { userId, locationId },
       relations: ['user', 'location'],
     });
   }
 
-  async addUserLocation(userId: number, locationId: number) {
-    const userLocation = this.userLocationRepository.create({
+  async addUserLocation(
+    userId: number,
+    locationId: number,
+    manager?: EntityManager,
+  ) {
+    const repo: Repository<UserLocation> = manager
+      ? manager.getRepository(UserLocation)
+      : this.userLocationRepository;
+
+    const userLocation = repo.create({
       userId,
       locationId,
     });
-    await this.userLocationRepository.save(userLocation);
+    await repo.save(userLocation);
     return userLocation;
   }
 
-  async removeUserLocation(userId: number, locationId: number) {
-    const entity = await this.findByUserIdAndLocationId(userId, locationId);
+  async removeUserLocation(
+    userId: number,
+    locationId: number,
+    manager?: EntityManager,
+  ) {
+    const repo: Repository<UserLocation> = manager
+      ? manager.getRepository(UserLocation)
+      : this.userLocationRepository;
+
+    const entity = await this.findByUserIdAndLocationId(userId, locationId, manager); //prettier-ignore
     if (!entity) {
       throw new NotFoundException('Location not marked as favourite');
     }
-    return this.userLocationRepository.remove(entity);
+    return repo.remove(entity);
   }
 }

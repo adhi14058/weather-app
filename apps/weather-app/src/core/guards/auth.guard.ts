@@ -1,3 +1,4 @@
+import { UserService } from './../../modules/user/user.service';
 import {
   Injectable,
   CanActivate,
@@ -11,7 +12,10 @@ import { getRequestResponseFromContext } from '../utils';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly userService: UserService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const { req } = getRequestResponseFromContext(context);
@@ -33,6 +37,11 @@ export class AuthGuard implements CanActivate {
         userId: tokenPayload.sub,
         username: tokenPayload.username,
       } as IAuthUser;
+      const user = await this.userService.getUserByUserName(tokenPayload.username); //prettier-ignore
+      if (!user) {
+        throw new UnauthorizedException('Invalid user');
+      }
+
       return true;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_err) {

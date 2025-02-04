@@ -57,7 +57,7 @@ type ForecastResponseDto {
   forecastday: [ForecastDayResponseDto!]!
 }
 
-type LocationResponseDto {
+type LocationResponseGqlDto {
   id: Int!
   city: String!
   region: String!
@@ -67,5 +67,5 @@ type LocationResponseDto {
 }
 
 type Query {
-  location: [LocationResponseDto!]
+  location: [LocationResponseGqlDto!]
 }
