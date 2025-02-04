@@ -4,9 +4,9 @@ Weather App is a NestJS application that serves as a wrapper for a third-party w
 
 ## Project setup
 
-- `copy .env.example to .env and fill the values`
-
 ```bash
+!!! copy .env.example to .env and fill the values
+
 $ docker compose build
 
 $ docker compose up
