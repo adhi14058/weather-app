@@ -1,4 +1,11 @@
-import { Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { LocationService } from './location.service';
 import { AuthGuard } from '../../core/guards/auth.guard';
 import { UseGuards } from '@nestjs/common';
@@ -8,6 +15,7 @@ import { WeatherResponseDto } from '../weather/dto/response-weather.dto';
 import { ForecastResponseDto } from '../weather/dto/response-forecast.dto';
 import { WeatherService } from '../weather/weather.service';
 import { LocationResponseGqlDto } from './dto/response-location-gql.dto';
+import { CreateLocationDto } from './dto/create-location.dto';
 
 @Resolver(() => LocationResponseGqlDto)
 @UseGuards(AuthGuard)
@@ -31,5 +39,13 @@ export class LocationResolver {
   @ResolveField(() => ForecastResponseDto)
   async forecast(@Parent() { city }: LocationResponseGqlDto) {
     return this.weatherService.getFiveDayForecastByLocation(city);
+  }
+
+  @Mutation(() => LocationResponseGqlDto)
+  async addLocation(
+    @Args('createLocationDto') createLocationDto: CreateLocationDto,
+    @AuthUser() { userId }: IAuthUser,
+  ) {
+    return this.locationService.addUserLocation(userId, createLocationDto.city);
   }
 }

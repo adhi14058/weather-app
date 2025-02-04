@@ -69,3 +69,11 @@ type LocationResponseGqlDto {
 type Query {
   location: [LocationResponseGqlDto!]
 }
+
+type Mutation {
+  addLocation(createLocationDto: CreateLocationDto!): LocationResponseGqlDto!
+}
+
+input CreateLocationDto {
+  city: String!
+}

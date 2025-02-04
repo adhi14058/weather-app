@@ -1,99 +1,79 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Weather App is a NestJS application that serves as a wrapper for a third-party weather API and provides additional features.
 
 ## Project setup
 
-```bash
-$ npm install
-```
-
-## Compile and run the project
+- `copy .env.example to .env and fill the values`
 
 ```bash
-# development
-$ npm run start
+$ docker compose build
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+$ docker compose up
 ```
 
-## Run tests
+- Server is running on http://localhost:3000
+- Open API Docs are available at http://localhost:3000/swagger
+- GraphQL Playground is available at http://localhost:3000/graphql
+
+```
+GraphQL Playground
+{
+  "authorization": "Bearer <TOKEN>"
+}
+
+
+curl 'http://localhost:3000/graphql' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/json' -H 'Accept: application/json' -H 'Connection: keep-alive' -H 'DNT: 1' -H 'Origin: http://localhost:3000' -H 'authorization: Bearer <TOKEN>' --data-binary '{"query":"# Write your query or mutation here\n{\n  location {\n    country\n    region\n    city\n    forecast {\n      forecastday {\n        date \n        \n          hour {\n            time\n            temp_c\n            \n          }\n        \n        \n      }\n    }\n    weather {\n      temp_c\n      wind_dir\n    }\n  }\n}\n"}' --compressed
+```
+
+##### Register a new user with the following documentation:
+
+http://localhost:3000/swagger#/Auth/AuthController_register
+
+#####
+
+- All the user APIs are protected by JWT token authentication.
+- GrpahQL APIs are protected by JWT token authentication
+- Weather and Forecast APIs are not protected by JWT token authentication
+
+## Design Descions
+
+#### Scheduler
+
+- This is a monorepo project, with the scheduler and weather-app as separate apps.
+- The weather-app uses the weather-api as a third-party API.
+- The reason for splitting the scheduler seperately is to allow the weather-app to be scaled independently of the scheduler.
+- The schedler uses bull to push jobs to the queue and a schduler to run the funtion at a specific time.
+- Both the reciever and sender are using the same queue as it using redis for storing the queue.
+
+#### Caching
+
+- I am also using redis to cache the weather data.
+- Weather Data is cached for 30 mins and the forecast for 4 hours. (Since the API gets updated every 30 mins for weather)
+- everytime someone requests the weather data, we check if the data is in the cache, if not we fetch the data from the API and cache it for 30 mins. (Same for forecast)
+- Due to the Scheduler, Processor runs at 1rst minute and 31rst minute of every hour. It will fetch all the locations which has been accessed in the last 1 one day and will populate the cache incase the weather data is not available in the cache
+
+#### Authentication and Rate Limiting
+
+- Authentication is done using JWT token.
+- bcrypt is used to hash the password. The password is stored in the database as a hash.
+- AuthGuard is used to protect the APIs.
+- Throttler module is used to limit upto 200 requests per minute per user (based on IP).
+
+#### Docs
+
+- Swagger for API documentation. [http://localhost:3000/swagger]
+- GraphQL Playground is available at http://localhost:3000/graphql
+
+#### Misc
+
+- http-create-context used to store the request and session ID accross the request lifecycle and this is being attahed the custom logger which in turn prints the ReqId and SessionId with every log/error which helps in debugging
+- Exception filters used to handle the errors and return consistent error response also while logging the errors. We send requestId in the response which can be used for tracking
+- TypeORM is used for database operations (Postgres DB)
+
+#### Run tests
 
 ```bash
 # unit tests
 $ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
 ```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

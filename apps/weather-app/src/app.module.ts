@@ -44,7 +44,7 @@ import { LocationResolver } from './modules/location/location.resolver';
     ThrottlerModule.forRoot([
       {
         ttl: _1_MINUTES_IN_MS,
-        limit: 1000,
+        limit: 200,
       },
     ]),
     TypeOrmModule.forRootAsync({

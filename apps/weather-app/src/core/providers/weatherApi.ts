@@ -1,4 +1,9 @@
-import { Injectable, HttpException, HttpStatus, Global } from '@nestjs/common';
+import {
+  Injectable,
+  Global,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import {
@@ -23,6 +28,18 @@ export class WeatherApiProvider {
     this.apiKey = this.configService.get<string>('WEATHERAPI_KEY')!;
   }
 
+  private handleApiError(error: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+    const { code, message }: { code: string; message: string } = error?.response?.data?.error ?? {}; //prettier-ignore
+    if (code || message) this.logger.error(`Error: ${code} -${message}`);
+    switch (code) {
+      case '1006':
+        throw new BadRequestException('Invalid Location');
+      default:
+        throw new InternalServerErrorException('Something went wrong');
+    }
+  }
+
   async fetchCurrentWeather(city: string): Promise<CurrentWeatherResponse> {
     const url = `${this.baseUrl}/current.json?key=${this.apiKey}&q=${encodeURIComponent(city)}`;
     try {
@@ -30,11 +47,8 @@ export class WeatherApiProvider {
       const response = await lastValueFrom(response$);
       return response.data;
     } catch (error) {
-      this.logger.error(`${error}`);
-      throw new HttpException(
-        'Failed to retrieve current weather',
-        HttpStatus.BAD_REQUEST,
-      );
+      this.handleApiError(error);
+      throw new InternalServerErrorException('Something went wrong');
     }
   }
 
@@ -45,11 +59,8 @@ export class WeatherApiProvider {
       const response = await lastValueFrom(response$);
       return response.data;
     } catch (error) {
-      this.logger.error(`${error}`);
-      throw new HttpException(
-        'Failed to retrieve forecast',
-        HttpStatus.BAD_REQUEST,
-      );
+      this.handleApiError(error);
+      throw new InternalServerErrorException('Something went wrong');
     }
   }
 
@@ -61,7 +72,7 @@ export class WeatherApiProvider {
       return response.data[0] ?? null;
     } catch (error) {
       this.logger.error(`${error}`);
-      throw new HttpException('Invalid Location', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('Invalid Location');
     }
   }
 }

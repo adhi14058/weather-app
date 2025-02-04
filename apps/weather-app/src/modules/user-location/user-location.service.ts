@@ -18,6 +18,7 @@ export class UserLocationService {
     return repo.find({
       where: { userId },
       relations: ['location'],
+      order: { locationId: 'ASC' },
     });
   }
 
